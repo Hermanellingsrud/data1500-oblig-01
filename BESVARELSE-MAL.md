@@ -51,9 +51,9 @@ Attributter for Kunder:
 * mobilnummer
 * epost
 
-Sykeler representerer hver fysisk sykkel i systemet. tatt_i_bruk_dato er for å kunne spore når sykkelen ble satt i drift.
+Sykkeler representerer hver fysisk sykkel i systemet. tatt_i_bruk_dato er for å kunne spore når sykkelen ble satt i drift.
 
-Attributter for Sykler:
+Attributter for Sykkler:
 * sykkel_id
 * tatt_i_bruk_dato
 
@@ -82,6 +82,50 @@ Attributter for Utleie:
 **Valgte datatyper og begrunnelser:**
 
 [Skriv ditt svar her - forklar hvilke datatyper du har valgt for hver attributt og hvorfor]
+Sykkelstasjon entiteten består av stasjon_id for å identifisere stasjonen, dette er da en INTEGER. Resten av attributtene er da tekst for informasjon om stasjonen.
+
+| Attributt  | Hva slags data | PostgreSQL type |
+|------------|---------------|-----------------|
+| stasjon_id | unik id       | INTEGER         |
+| navn       | kort tekst    | VARCHAR(50)     |
+| adresse    | tekst | VARCHAR(100)    |
+
+Kunde entiteten består av kunde_id for å identifisere kunden, dette blir da INTEGER. Og resten av attributtene bester av tekst for å kunne identifisere og kontakte kunden. Mobilnummer er også tekst for mobilnummeret kan starte med 0 og inneholde +47.
+
+| Attributt   | Hva slags data | PostgreSQL type |
+|-------------|----------------|-----------------|
+| kunde_id    | unik id        | INTEGER         |
+| fornavn     | kort tekst     | VARCHAR(50)     |
+| etternavn   | kort tekst | VARCHAR(50)     |
+| mobilnummer | kort tkest | VARCHAR(15)     |
+| epost       | tekst | VARCHAR(255)    |
+
+Sykkel entiteten består også av en sykkel_id for å identifisere sykkelen (INTEGER). tatt_i_bruk_dato er datoen da sykkelen ble satt i bruk og har derfor datatypen Date.
+
+| Attributt   | Hva slags data | PostgreSQL type |
+|-------------|----------------|-----------------|
+| sykkel_id    | unik id        | INTEGER         |
+| tatt_i_bruk_dato     | dato           | Date            |
+
+Lås entiteten består av to attributter, en lås_id for å identifisere låsen (INTEGER) og stasjon_id for å identifisere hvilken stasjon låsen er på (INTEGER)
+
+| Attributt   | Hva slags data               | PostgreSQL type |
+|-------------|------------------------------|-----------------|
+| lås_id    | unik id                      | INTEGER         |
+| stasjon_id     | ID til stasjonen låsen er på | INTEGER            |
+
+Utleie entiteten...
+
+| Attributt   | Hva slags data | PostgreSQL type |
+|-------------|----------------|--|
+| utleie_id   | unik id        | INTEGER |
+| start_tid   | tidspunkt for start      | TIMESTAMP |
+| slutt_tid   | tidspunkt for slutt      | TIMESTAMP |
+| pris | beløp          | NUMERIC(6,2) |
+| kunde_id       | ID til kunden som leier        | INTEGER |
+| sykkel_id   | ID til sykkel som leies      | INTEGER |
+| start_lås_id | ID til lås sykkelen låses opp fra          | INTEGER |
+| slutt_lås_id       | ID til lås sykkelen leveres tilbake til        | INTEGER |
 
 **`CHECK`-constraints:**
 
