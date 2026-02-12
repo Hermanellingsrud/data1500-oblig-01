@@ -1,8 +1,8 @@
 # Besvarelse - Refleksjon og Analyse
 
-**Student:** [Ditt navn]
+**Student:** Herman Bayer Ellingsrud
 
-**Studentnummer:** [Ditt studentnummer]
+**Studentnummer:** 408418
 
 **Dato:** [Innleveringsdato]
 
@@ -14,11 +14,66 @@
 
 **Identifiserte entiteter:**
 
-[Skriv ditt svar her - list opp alle entitetene du har identifisert]
+Det første jeg gjør for å finne potensielle entiteter er å lete etter substantiver i casen. Dette er substantivene jeg har funnet:
+
+* Sykkelstasjoner
+* Kunder
+* Sykler
+* Låser
+* Utleie
+* Betalingskort
+
+For å ikke lage irrelevante identiterer basert på oppgaveteksten, filtrerer jeg bort betalingskort. Dette gir meg da fem entiteter:
+
+* Sykkelstasjoner
+* Kunder
+* Sykler
+* Låser
+* Utleie
 
 **Attributter for hver entitet:**
 
-[Skriv ditt svar her - list opp attributtene for hver entitet]
+Attributtene beskriver egenskapene til en entitet og brukes til å lagre relevant informasjon om objektene i databasen.
+
+Sykkelstasjonene representerer fysiske stasjoner der sykler kan hentes og leveres. Det er derfor viktig å ha unik identifikator for hver stasjon. Systemet må kunne identifisere hver stasjon og vise kunder hvor den ligger.
+
+Attributter for Sykkelstasjoner:
+* stasjon_id
+* navn
+* adresse
+
+Kunder represtenterer personer som bruker sykkelsystemet.Systemet må derfor kunne identifisere kunder og kunne kontakte dem.
+
+Attributter for Kunder:
+* kunde_id
+* fornavn
+* etternavn
+* mobilnummer
+* epost
+
+Sykeler representerer hver fysisk sykkel i systemet. tatt_i_bruk_dato er for å kunne spore når sykkelen ble satt i drift.
+
+Attributter for Sykler:
+* sykkel_id
+* tatt_i_bruk_dato
+
+Låsene representerer låsemekanismene ved hver stasjon der sykkelene festes.
+
+Attributter for Låser:
+* lås_id
+* stasjon_id
+
+Utleie representerer selve leieforholdet mellom kunde og sykkel over tid. Det er flere attributter her for å kunne spore hele reisen til sykkelen.
+
+Attributter for Utleie:
+* utleie_id
+* start_tid
+* slutt_tid
+* pris
+* kunde_id
+* sykkel_id
+* start_lås_id
+* slutt_lås_id
 
 ---
 
