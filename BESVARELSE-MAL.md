@@ -169,7 +169,7 @@ En kan passe på at lås_id ikke er negativ ved
 
 Her er kode for mermaid-koden til ER-diagremmet:
 
-```sql
+```bash
 erDiagram
     SYKKELSTASJON {
         INTEGER stasjon_id
@@ -216,23 +216,75 @@ erDiagram
 
 ![ER-diagram](ER-diagram.png)
 
-
-
 ---
 
 ### Oppgave 1.3: Primærnøkler
 
 **Valgte primærnøkler og begrunnelser:**
 
-[Skriv ditt svar her - forklar hvilke primærnøkler du har valgt for hver entitet og hvorfor]
+I dette tilfellet er alle primærnøklene surrogatnøkler, siden de har lite verdi i det fysiske samfunnet men god verdi i databasen. Disse surrogatnøklene gir leksibilitet hvis naturlige nøkkelverdier endres, som for eksempel epost eller mobilnummer. 
+
+| Entitet        | Primærnøkkel | Begrunnelse |
+|----------------|-------------|-------------|
+| Sykkelstasjon  | stasjon_id  | Unik ID for hver stasjon. Navn eller adresse kan endres, så surrogatnøkkel er mer stabil. |
+| Kunde          | kunde_id    | Unik ID for hver kunde. E-post eller mobilnummer kunne vært unik, men kan endres, derfor surrogatnøkkel. |
+| Sykkel         | sykkel_id   | Unik ID for hver sykkel. Tatt_i_bruk_dato er ikke unik, derfor trenger vi en surrogatnøkkel. |
+| Lås            | lås_id      | Unik ID for hver lås. Kombinasjon med stasjon_id kunne fungert, men surrogatnøkkel er enklere å bruke. |
+| Utleie         | utleie_id   | Unik ID for hver utleie. Start_tid og kunde_id kan gjentas, så vi trenger en separat primærnøkkel. |
+
 
 **Naturlige vs. surrogatnøkler:**
 
-[Skriv ditt svar her - diskuter om du har brukt naturlige eller surrogatnøkler og hvorfor]
+I denne casen har jeg valgt å bruke surrogatnøkler for alle primærnøkler ettersom surrogarnøklene gir mer stabilitet og fleksibilitet, og gjør det enklere å koble tabeller sammen uten å bekymre seg for at naturlige attributter endres. 
 
 **Oppdatert ER-diagram:**
 
-[Legg inn mermaid-kode eller eventuelt en bildefil fra `mermaid.live` her]
+```bash
+erDiagram
+    SYKKELSTASJON {
+        INTEGER stasjon_id PK
+        VARCHAR navn
+        VARCHAR adresse
+    }
+
+    KUNDE {
+        INTEGER kunde_id PK
+        VARCHAR fornavn
+        VARCHAR etternavn
+        VARCHAR mobilnummer
+        VARCHAR epost
+    }
+
+    SYKKEL {
+        INTEGER sykkel_id PK
+        DATE tatt_i_bruk_dato
+    }
+
+    LÅS {
+        INTEGER lås_id PK
+        INTEGER stasjon_id
+    }
+
+    UTLEIE {
+        INTEGER utleie_id PK
+        TIMESTAMP start_tid
+        TIMESTAMP slutt_tid
+        NUMERIC pris
+        INTEGER kunde_id
+        INTEGER sykkel_id
+        INTEGER start_lås_id
+        INTEGER slutt_lås_id
+    }
+
+    %% Relasjoner
+    SYKKELSTASJON ||--o{ LÅS : har
+    KUNDE ||--o{ UTLEIE : "gjør"
+    SYKKEL ||--o{ UTLEIE : "blir leid"
+    LÅS ||--o{ UTLEIE : start_lås
+    LÅS ||--o{ UTLEIE : slutt_lås
+```
+![ER-diagram](ER2.png)
+
 
 ---
 
@@ -240,15 +292,72 @@ erDiagram
 
 **Identifiserte forhold og kardinalitet:**
 
-[Skriv ditt svar her - list opp alle forholdene mellom entitetene og angi kardinalitet]
+| Entitet 1     | Entitet 2 | Forhold                                         | Kardinalitet      | Forklaring                                                                                   |
+| ------------- | --------- | ----------------------------------------------- | ----------------- | -------------------------------------------------------------------------------------------- |
+| Sykkelstasjon | Lås       | En stasjon har mange låser                      | 1 til mange (1:M) | Hver stasjon kan ha mange låser, men hver lås tilhører kun én stasjon.                       |
+| Kunde         | Utleie    | En kunde kan ha mange utleier                   | 1 til mange (1:M) | En kunde kan leie sykler flere ganger, men hver utleie tilhører én kunde.                    |
+| Sykkel        | Utleie    | En sykkel kan være med i mange utleier over tid | 1 til mange (1:M) | Hver utleie gjelder én sykkel, men en sykkel kan ha mange utleier historisk.                 |
+| Lås           | Utleie    | Hver utleie starter og slutter ved en lås       | 1 til mange (1:M) | En lås kan brukes i mange utleier over tid, men hver start- eller sluttlås peker til én lås. |
+
 
 **Fremmednøkler:**
 
-[Skriv ditt svar her - list opp alle fremmednøklene og forklar hvordan de implementerer forholdene]
+| Tabell | Fremmednøkkel | Refererer til             | Forklaring                                                                          |
+| ------ | ------------- | ------------------------- | ----------------------------------------------------------------------------------- |
+| LÅS    | stasjon_id    | SYKKELSTASJON(stasjon_id) | Hver lås tilhører en stasjon, implementerer 1:M-forholdet mellom stasjon og lås.    |
+| UTLEIE | kunde_id      | KUNDE(kunde_id)           | Hver utleie tilhører én kunde, implementerer 1:M-forholdet mellom kunde og utleie.  |
+| UTLEIE | sykkel_id     | SYKKEL(sykkel_id)         | Hver utleie gjelder én sykkel, men en sykkel kan ha mange utleier historisk.        |
+| UTLEIE | start_lås_id  | LÅS(lås_id)               | Hver utleie starter ved en lås, implementerer 1:M-forholdet mellom lås og utleie.   |
+| UTLEIE | slutt_lås_id  | LÅS(lås_id)               | Hver utleie avsluttes ved en lås, implementerer 1:M-forholdet mellom lås og utleie. |
+
 
 **Oppdatert ER-diagram:**
 
-[Legg inn mermaid-kode eller eventuelt en bildefil fra `mermaid.live` her]
+```bash
+erDiagram
+    SYKKELSTASJON {
+        INTEGER stasjon_id PK
+        VARCHAR navn
+        VARCHAR adresse
+    }
+
+    KUNDE {
+        INTEGER kunde_id PK
+        VARCHAR fornavn
+        VARCHAR etternavn
+        VARCHAR mobilnummer
+        VARCHAR epost
+    }
+
+    SYKKEL {
+        INTEGER sykkel_id PK
+        DATE tatt_i_bruk_dato
+    }
+
+    LÅS {
+        INTEGER lås_id PK
+        INTEGER stasjon_id FK
+    }
+
+    UTLEIE {
+        INTEGER utleie_id PK
+        TIMESTAMP start_tid
+        TIMESTAMP slutt_tid
+        NUMERIC pris
+        INTEGER kunde_id FK
+        INTEGER sykkel_id FK
+        INTEGER start_lås_id FK
+        INTEGER slutt_lås_id FK
+    }
+
+    %% Relasjoner
+    SYKKELSTASJON ||--o{ LÅS : har
+    KUNDE ||--o{ UTLEIE : "gjør"
+    SYKKEL ||--o{ UTLEIE : "blir leid"
+    LÅS ||--o{ UTLEIE : start_lås
+    LÅS ||--o{ UTLEIE : slutt_lås
+```
+![ER-diagram](ER3.png)
 
 ---
 
@@ -256,19 +365,18 @@ erDiagram
 
 **Vurdering av 1. normalform (1NF):**
 
-[Skriv ditt svar her - forklar om datamodellen din tilfredsstiller 1NF og hvorfor]
+Datamodellen som blir fremstilt tilfredstiller 1NF fordi alle attributtene har atomvære verdier, det vil si hvert felt i tabellene inneholder én enkelt verdi, ikke lister eller sett. Det er heller ingen repeterende grupper. Det er altså ingen kolonner som lagrer flere verdier i samme felt.
 
 **Vurdering av 2. normalform (2NF):**
 
-[Skriv ditt svar her - forklar om datamodellen din tilfredsstiller 2NF og hvorfor]
+Datamodellen tilfredstiller også 2NF fordi den har atomære verdier og entydige rader. Samtidig er også alle ikke-nøkkel-attributter fullstendig funksjonelt avhengige av hele primærnøkkelen. For eksempel i KUNDE er fornavn, etternavn, mobilnummer og epost alle avhengige av kunde_id.
 
 **Vurdering av 3. normalform (3NF):**
 
-[Skriv ditt svar her - forklar om datamodellen din tilfredsstiller 3NF og hvorfor]
+Til slutt tilfredstiller datamodellen også 3NF ettersom 2NF også er tilfredstilt og ingen av ikke-nøkkel-attributter er transitivt avhengige av primærnøkkelen. Det vil si det finnes ingen attributter som kan utledes fra andre ikke-nøkkel-attributter.
 
 **Eventuelle justeringer:**
 
-[Skriv ditt svar her - hvis modellen ikke var på 3NF, forklar hvilke justeringer du har gjort]
 
 ---
 
