@@ -81,7 +81,8 @@ Attributter for Utleie:
 
 **Valgte datatyper og begrunnelser:**
 
-[Skriv ditt svar her - forklar hvilke datatyper du har valgt for hver attributt og hvorfor]
+I denne databasen bruker jeg unike ID-er for å identifisere hver entitet (sykkel, kunde, stasjon, lås og utleie). Disse ID-ene er av datatypen INTEGER, som er effektiv for lagring og koblinger mellom tabeller. Tekstfelt som navn, adresse og e-post lagres som VARCHAR med passende maks-lengde, mens dato- og tidsinformasjon lagres med DATE og TIMESTAMP. Beløp for utleie lagres som NUMERIC(6,2) for å sikre presisjon med desimaler.
+
 Sykkelstasjon entiteten består av stasjon_id for å identifisere stasjonen, dette er da en INTEGER. Resten av attributtene er da tekst for informasjon om stasjonen.
 
 | Attributt  | Hva slags data | PostgreSQL type |
@@ -114,26 +115,108 @@ Lås entiteten består av to attributter, en lås_id for å identifisere låsen 
 | lås_id    | unik id                      | INTEGER         |
 | stasjon_id     | ID til stasjonen låsen er på | INTEGER            |
 
-Utleie entiteten...
+Utleie entiteten har en unik id ved utleie_id som INTEGER. start_tid og slutt_tid bruker TIMESTAMP som datatype, pris er et beløp så NUMERIC(6,2) gir 4 tall før komma og 2 tall etter komma, antar at prisene ikke blir dyrere enn dette.
+Det er også INTEGER til kunde_id, sykkel_id, start_lås_id og slutt_lås_id. 
 
-| Attributt   | Hva slags data | PostgreSQL type |
-|-------------|----------------|--|
-| utleie_id   | unik id        | INTEGER |
-| start_tid   | tidspunkt for start      | TIMESTAMP |
-| slutt_tid   | tidspunkt for slutt      | TIMESTAMP |
-| pris | beløp          | NUMERIC(6,2) |
-| kunde_id       | ID til kunden som leier        | INTEGER |
-| sykkel_id   | ID til sykkel som leies      | INTEGER |
-| start_lås_id | ID til lås sykkelen låses opp fra          | INTEGER |
-| slutt_lås_id       | ID til lås sykkelen leveres tilbake til        | INTEGER |
+| Attributt   | Hva slags data                          | PostgreSQL type |
+|-------------|-----------------------------------------|--|
+| utleie_id   | unik id                                 | INTEGER |
+| start_tid   | tidspunkt for start                     | TIMESTAMP |
+| slutt_tid   | tidspunkt for slutt                     | TIMESTAMP |
+| pris | beløp                                   | NUMERIC(6,2) |
+| kunde_id       | ID til kunden som leier                 | INTEGER |
+| sykkel_id   | ID til sykkel som leies                 | INTEGER |
+| start_lås_id | ID til lås sykkelen låses opp fra       | INTEGER |
+| slutt_lås_id       | ID til lås sykkelen leveres tilbake til | INTEGER |
 
 **`CHECK`-constraints:**
 
-[Skriv ditt svar her - list opp alle CHECK-constraints du har lagt til og forklar hvorfor de er nødvendige]
+`CHECK`-constraints er nyttige til å sikre dataintegriteten og forhindre at kunder eller brukere legger inn ugyldige verdier. I denne casen kan dette være å passe på at det blir lagt inn gyldige datoer, positive verdier for ID og pris eller gyldige mobilnummer og email.
+
+Sykkelstasjon `CHECK`-constraints:
+
+Her kan en passe på at stasjon_id alltid er positiv ved
+* `CHECK` (stasjon_id > 0)
+
+Kunde `CHECK`-constraints:
+
+For å passe på at mobilnummer inneholder tall og eventuelt + foran kan en legge til en `CHECK`-constraint som beskytter mot ugyldige nummer
+* `CHECK` (mobilnummer ~ '^\+?[0-9]{8,15}$')
+
+For å passe på gyldig epost kan en sikre at eposten inneholder @ ved
+* `CHECK` (epost LIKE '%@%')
+
+Sykkel `CHECK`-constraints:
+
+For å sikre at tatt_i_bruk_dato er gyldig og ikke har en fremtidig dato kan en bruke
+* `CHECK` (tatt_i_bruk_dato <= CURRENT_DATE)
+
+Utleie `CHECK`-constraints:
+
+For utleie kan en sjekke at prisen ikke er negativ ved
+* `CHECK` (pris >= 0)
+
+En kan også sjekke at start og slutt tidene har et passende forhold med
+
+* `CHECK` (slutt_tid IS NULL OR slutt_tid >= start_tid)
+
+Lås `CHECK`-constraints:
+
+En kan passe på at lås_id ikke er negativ ved
+* `CHECK` (lås_id > 0)
 
 **ER-diagram:**
 
-[Legg inn mermaid-kode eller eventuelt en bildefil fra `mermaid.live` her]
+Her er kode for mermaid-koden til ER-diagremmet:
+
+```sql
+erDiagram
+    SYKKELSTASJON {
+        INTEGER stasjon_id
+        VARCHAR navn
+        VARCHAR adresse
+    }
+
+    KUNDE {
+        INTEGER kunde_id
+        VARCHAR fornavn
+        VARCHAR etternavn
+        VARCHAR mobilnummer
+        VARCHAR epost
+    }
+
+    SYKKEL {
+        INTEGER sykkel_id
+        DATE tatt_i_bruk_dato
+    }
+
+    LÅS {
+        INTEGER lås_id
+        INTEGER stasjon_id
+    }
+
+    UTLEIE {
+        INTEGER utleie_id
+        TIMESTAMP start_tid
+        TIMESTAMP slutt_tid
+        NUMERIC pris
+        INTEGER kunde_id
+        INTEGER sykkel_id
+        INTEGER start_lås_id
+        INTEGER slutt_lås_id
+    }
+
+    %% Relasjoner
+    SYKKELSTASJON ||--o{ LÅS : har
+    KUNDE ||--o{ UTLEIE : "gjør"
+    SYKKEL ||--o{ UTLEIE : "blir leid"
+    LÅS ||--o{ UTLEIE : start_lås
+    LÅS ||--o{ UTLEIE : slutt_lås
+```
+
+![ER-diagram](ER-diagram.png)
+
+
 
 ---
 
