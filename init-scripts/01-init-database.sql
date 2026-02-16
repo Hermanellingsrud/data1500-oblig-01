@@ -23,26 +23,28 @@ CREATE TABLE SYKKEL (
     tatt_i_bruk_dato DATE NOT NULL
 );
 
-CREATE TABLE LÅS (
-    lås_id INTEGER PRIMARY KEY,
+CREATE TABLE las (
+    las_id INTEGER PRIMARY KEY,
     stasjon_id INTEGER NOT NULL,
-    FOREIGN KEY (stasjon_id) REFERENCES SYKKELSTASJON(stasjon_id)
+    FOREIGN KEY (stasjon_id) REFERENCES sykkelstasjon(stasjon_id)
 );
 
-CREATE TABLE UTLEIE (
+
+CREATE TABLE utleie (
     utleie_id INTEGER PRIMARY KEY,
     start_tid TIMESTAMP NOT NULL,
     slutt_tid TIMESTAMP,
     pris NUMERIC(6,2),
     kunde_id INTEGER NOT NULL,
     sykkel_id INTEGER NOT NULL,
-    start_lås_id INTEGER NOT NULL,
-    slutt_lås_id INTEGER,
-    FOREIGN KEY (kunde_id) REFERENCES KUNDE(kunde_id),
-    FOREIGN KEY (sykkel_id) REFERENCES SYKKEL(sykkel_id),
-    FOREIGN KEY (start_lås_id) REFERENCES LÅS(lås_id),
-    FOREIGN KEY (slutt_lås_id) REFERENCES LÅS(lås_id)
+    start_las_id INTEGER NOT NULL,
+    slutt_las_id INTEGER,
+    FOREIGN KEY (kunde_id) REFERENCES kunde(kunde_id),
+    FOREIGN KEY (sykkel_id) REFERENCES sykkel(sykkel_id),
+    FOREIGN KEY (start_las_id) REFERENCES las(las_id),
+    FOREIGN KEY (slutt_las_id) REFERENCES las(las_id)
 );
+
 -- Sett inn testdata
 
 -- Sykkelstasjoner (5)
@@ -66,17 +68,17 @@ INSERT INTO SYKKEL (sykkel_id, tatt_i_bruk_dato)
 SELECT generate_series(1,100), CURRENT_DATE - (random()*365)::int;
 
 -- Låser (100, 20 per stasjon)
-INSERT INTO LÅS (lås_id, stasjon_id)
+INSERT INTO las (las_id, stasjon_id)
 SELECT i, ((i-1)/20 +1)::int
 FROM generate_series(1,100) AS s(i);
 
--- Utleier (50)
-INSERT INTO UTLEIE (utleie_id, start_tid, slutt_tid, pris, kunde_id, sykkel_id, start_lås_id, slutt_lås_id)
+-- Utleie (50)
+INSERT INTO utleie (utleie_id, start_tid, slutt_tid, pris, kunde_id, sykkel_id, start_las_id, slutt_las_id)
 SELECT
     i,
-    CURRENT_DATE - (random()*30)::int + (random()*interval '2 hours') AS start_tid,
-    start_tid + (random()*interval '2 hours') AS slutt_tid,
-    (random()*50)::numeric(6,2),
+    CURRENT_DATE + time '08:00',
+    CURRENT_DATE + time '09:00',
+    29.90,
     ((i-1) % 5 + 1),
     ((i-1) % 100 + 1),
     ((i-1) % 100 + 1),
@@ -85,6 +87,34 @@ FROM generate_series(1,50) AS s(i);
 
 
 -- DBA setninger (rolle: kunde, bruker: kunde_1)
+
+-- Opprett rolle
+CREATE ROLE kunde;
+
+-- Opprett eksempelbruker og gi rolle
+CREATE USER kunde_1 WITH PASSWORD 'passord123';
+GRANT kunde TO kunde_1;
+
+-- oppretter veiw
+CREATE VIEW kunde_utleie_view AS
+SELECT
+    u.utleie_id,
+    u.start_tid,
+    u.slutt_tid,
+    u.pris,
+    k.fornavn,
+    k.etternavn,
+    s.navn AS stasjon_start,
+    s2.navn AS stasjon_slutt
+FROM utleie u
+JOIN kunde k ON u.kunde_id = k.kunde_id
+JOIN las l1 ON u.start_las_id = l1.las_id
+JOIN sykkelstasjon s ON l1.stasjon_id = s.stasjon_id
+JOIN las l2 ON u.slutt_las_id = l2.las_id
+JOIN sykkelstasjon s2 ON l2.stasjon_id = s2.stasjon_id;
+
+
+GRANT SELECT ON kunde_utleie_view TO kunde;
 
 
 
