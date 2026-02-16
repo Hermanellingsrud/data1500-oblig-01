@@ -799,7 +799,7 @@ utleie_id |      start_tid      |      slutt_tid      | pris  | fornavn | ettern
 
 **Ulempe med VIEW vs. POLICIES:**
 
-[Skriv ditt svar her - diskuter minst én ulempe med å bruke VIEW for autorisasjon sammenlignet med POLICIES]
+En stor ulempe med VIEW er som en kan se over at kunde_1 kan se når alle andre kunder har vært aktive også. Om man vil at hver kunde kun skal se sin egen aktivitet med VIEW måtte man lagd et eget VIEW per kunde, med for ekesmpel `WHERE kunde_id = 1`. Med POLICIES kan en derimot definere regler som automatisk filtrerer rader basert på innlogget bruker, uten å lage separate views for hver kunde.
 
 ---
 
