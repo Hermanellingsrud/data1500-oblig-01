@@ -1007,21 +1007,25 @@ Basert på diskusjonen over burde valideringen gjøres i alle tre lagene. Dette 
 
 **Hva har du lært så langt i emnet:**
 
-[Skriv din refleksjon her - diskuter sentrale konsepter du har lært]
+Så langt i emnet har jeg lært mye om databasedesign, normalisering og dataintegritet. Jeg har gjort oppgaver og fått praktisk erfaring med hvordan man designer relasjonelle databaser, oppretter tabeller med riktige datatyper. Jeg har også fått testet litt hvordan man bruker constraints som PRIMARY KEY, FOREIGN KEY og NOT NULL for å sikre at dataene er konsistente. Et annet viktig konsept jeg har lært og jobbet litt med er ER-diagram. Jeg syns det var veldig lærerikt å lage disse diagrammene og se mer visuelt hvordan tabellene er koblet sammen.
+
+Jeg har også fått innsikt i forskjellen mellom flate filer og relasjonsdatabaser, og hvordan normalisering reduserer redundans og risiko for inkonsistens. Bruken av indekser og datastrukturer som B+-trær og hash-tabeller har vist meg hvordan man kan gjøre søk og oppslag i store databaser mer effektive, og hvorfor det er viktig å tenke på RAM vs. disk når man velger datastruktur.
+
+Arbeidet jeg har gjort har også gjort meg tryggere med GitHub og Docker. Dette har gitt meg erfaring med hvordan man kan sette opp og kjøre en database i et isolert miljø.
 
 **Hvordan har denne oppgaven bidratt til å oppnå læringsmålene:**
 
-[Skriv din refleksjon her - koble oppgaven til læringsmålene i emnet]
+Denne oppgaven har gitt meg praktisk erfaring med flere av de sentrale læringsmålene i emnet. Gjennom arbeidet med å designe og analysere databasen for bysykkelsystemet har jeg lært å forklare hva et databasesystem består av og hvordan ER-modellering og normalisering brukes for å lage en godt strukturert relasjonsdatabase. Jeg har fått erfaring med å lage tabeller og sette opp constraints i SQL, samt forstått betydningen av indekser og fysiske lagringsmåter for effektiv datatilgang.
 
-Se oversikt over læringsmålene i en PDF-fil i Canvas https://oslomet.instructure.com/courses/33293/files/folder/Plan%20v%C3%A5ren%202026?preview=4370886
+Se oversikt over læringsmålene i en PDF-fil i Canvas https://oslomet.instructure.com/courses/33293/files/folder/Plan%20v%C3%A5ren%202026?preview=4370886 . Hadde ikke tilgang til denne linken, så jeg brukte læringsmålene fra emnesiden: https://student.oslomet.no/en/studier/-/studieinfo/emne/DATA1500/2025/HØST .
 
 **Hva var mest utfordrende:**
 
-[Skriv din refleksjon her - diskuter hvilke deler av oppgaven som var mest krevende]
+Jeg syns del 3 – tilgangskontroll var mest krevende. Spesielt var det utfordrende å lage SQL for VIEW, fordi man måtte passe nøye på JOINs mellom tabeller med fremmednøkler for å sikre at riktige data ble vist.
 
 **Hva har du lært om databasedesign:**
 
-[Skriv din refleksjon her - reflekter over prosessen med å designe en database fra bunnen av]
+Jeg syns det å designe databasen fra bunnen av var veldig kult og lærerikt. Det gjorde det veldig oversiktlig å først liste opp alle entiteter og attributter og hva slags datatyper som blir brukt. Bruken av ER-diagrammene gjorde det også veldig oversiktlig med sammenhengen mellom tabellene. Jeg føler det at ved å gå nøye gjennom starten av databasen gjorde de senere oppgavene lettere når man har klar og oversiktlig oversikt over databasen.
 
 ---
 
