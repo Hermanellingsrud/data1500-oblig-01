@@ -815,15 +815,84 @@ En stor ulempe med VIEW er som en kan se over at kunde_1 kan se når alle andre 
 
 **Totalt antall utleier per år:**
 
-[Skriv din utregning her]
+- Høysesong: 5 måneder * 20 000 utleier/måned = 100 000 utleier
+- Mellomsesong: 4 måneder * 5 000 utleier/måned = 20 000 utleier
+- Lavsesong: 3 måneder * 500 utleier/måneder = 1 500 utleier
+
+Totalt antall utleier = 121 500 utleier per år.
 
 **Estimat for lagringskapasitet:**
 
-[Skriv din utregning her - vis hvordan du har beregnet lagringskapasiteten for hver tabell]
+Estimat for sykkelstasjon:
+
+| Kolonne    | Type         | Bytes |
+| ---------- | ------------ | ----- |
+| stasjon_id | INTEGER      | 4     |
+| navn       | VARCHAR(50)  | ~50   |
+| adresse    | VARCHAR(100) | ~100  |
+
+Totalt blir dette da 154 Bytes. Om man antar 100 sykkelstasjoner blir dette da 15 400 Bytes. Med overhead ganger jeg med 2 siden en rad i PostgreSQL inneholder mer enn bare kolonnedata. Får da 30 800 Bytes ≈ 31 KB.
+
+Estimat for Kunde:
+
+| Kolonne     | Type         | Bytes |
+| ----------- | ------------ | ----- |
+| kunde_id    | INTEGER      | 4     |
+| fornavn     | VARCHAR(50)  | 50    |
+| etternavn   | VARCHAR(50)  | 50    |
+| mobilnummer | VARCHAR(15)  | 15    |
+| epost       | VARCHAR(255) | 255   |
+
+Totalt blir dette da 374 Bytes. Om vi antar 10 000 kunder i løpet av året blir dette da 3 740 000 Bytes ≈ 3.7 MB. Med overhead blir dette da 7.4 MB.
+
+Estimet for sykkel:
+
+| Kolonne          | Datatype | Bytes |
+| ---------------- | -------- | ----- |
+| sykkel_id        | INTEGER  | 4     |
+| tatt_i_bruk_dato | DATE     | 4     |
+
+
+Totalt blir dette da 8 Bytes. Om vi antar 2 000 sykkler blir dette da 16 000 Bytes ≈ 16 KB. Med overhead blir dette 32 KB.
+
+Estimat for lås:
+
+| Kolonne    | Datatype | Bytes |
+| ---------- | -------- | ----- |
+| lås_id     | INTEGER  | 4     |
+| stasjon_id | INTEGER  | 4     |
+
+
+Totalt blir dette 8 Bytes. Om hver sykkel trenger sin egen lås blir det da 2 000 låser, og vi får 16 KB her også. Med overhead blir det da 32 KB. 
+
+Estimat for utleie:
+
+| Kolonne      | Datatype     | Bytes |
+| ------------ | ------------ | ----- |
+| utleie_id    | INTEGER      | 4     |
+| start_tid    | TIMESTAMP    | 8     |
+| slutt_tid    | TIMESTAMP    | 8     |
+| pris         | NUMERIC(6,2) | ~8    |
+| kunde_id     | INTEGER      | 4     |
+| sykkel_id    | INTEGER      | 4     |
+| start_lås_id | INTEGER      | 4     |
+| slutt_lås_id | INTEGER      | 4     |
+
+Totalt blir dette 44 Bytes, med PostgreSQL-overhead blir det 88 Bytes. Med 121 500 utleier får vi 10 692 000 Bytes ≈ 10.7 MB.
+
+
 
 **Totalt for første år:**
 
-[Skriv ditt estimat her]
+Total lagringskapasitet for det første året blir da:
+
+- sykkelstasjon: 31 KB ≈ 0.031 MB
+- kunde: 7.4 MB
+- sykkel: 32 KB ≈ 0.032 MB
+- lås: 32 KB ≈ 0.032 MB
+- utleie: 10.7 MB
+
+Totalt blir dette 18.195 MB ≈ 18.2 MB.
 
 ---
 
@@ -833,31 +902,33 @@ En stor ulempe med VIEW er som en kan se over at kunde_1 kan se når alle andre 
 
 **Problem 1: Redundans**
 
-[Skriv ditt svar her - gi konkrete eksempler fra CSV-filen som viser redundans]
+I denne flate filen er det en del duplisering av data. For eksempel blir kunder gjentatt flere ganger, dette medfører også at mobilnummer og epost blir gjentatt. Et eksempel på dette er Ole Hansen ved rad 1, 2 og 7. Vi ser også at sykkel-modell blir gjentatt flere ganger. Det samme skjer med sykkelstasjon informasjon. Konsekvenser av dette er at det blir flere kopier med samme informasjon som fører til større fil, og krever mer lagringsbehov.
 
 **Problem 2: Inkonsistens**
 
-[Skriv ditt svar her - forklar hvordan redundans kan føre til inkonsistens med eksempler]
+Redusans kan føre til inkonsistente data ved for eksempel om det blir gjort endringer. Et eksempel på dette kan være om en kunde endrer mobilnummer i én rad, men ikke i de andre. Eller at en stasjonsadresse endres, slik at en må oppdatere alle rader, ellers får vi motstridende informasjon.
 
 **Problem 3: Oppdateringsanomalier**
 
-[Skriv ditt svar her - diskuter slette-, innsettings- og oppdateringsanomalier]
+Oppdateringsanomalier som kan oppstå ved flate filer kan være slette-, innsettings- og oppdateringsanomalier. Sletteanomalier kan være at en mister informasjon om en kunde, dersom en sletter et utleie fra kunden. Innsettinganomalier kan være at en ny kunde uten utleie må ha en rad med dummy-utleie for å lagre kunden. Oppdateringsanomalier kan være at en endring i sykkelmodell eller stasjon krever at alle rader med den sykkelen/stasjonen må oppdateres.
 
 **Fordeler med en indeks:**
 
-[Skriv ditt svar her - forklar hvorfor en indeks ville gjort spørringen mer effektiv]
+Fordeler med indekser vil være at spørringer blir mye raskere. Uten indeks må en søke gjennom alle rader, det blir da O(n), som betyr at tiden vokser lineært med antall elementer. Med indeks kan databasen finne direkte radene som matcher, det blir da O(log n), som betyr at tiden vokser logaritmisk.
 
 **Case 1: Indeks passer i RAM**
 
-[Skriv ditt svar her - forklar hvordan indeksen fungerer når den passer i minnet]
+Når hele indeksen, som foreksempel ved B+-treet eller hash-tabellen, ligger i RAM, kan databasen hoppe direkte til riktig node eller hash-bucket uten å lese fra disk. Dette gjør at hver lookup blir nesten like rask som å hente en verdi fra et array i minnet. Dette er effektivt siden RAM-tilgang er mange tusen ganger raskere enn disk-tilgang. Dette gjør da at operasjoner som å finne alle utleier for en gitt sykkel kan gjøres veldig raskt selv for store tabeller.
 
 **Case 2: Indeks passer ikke i RAM**
 
-[Skriv ditt svar her - forklar hvordan flettesortering kan brukes]
+Hvis indeksen er for stor for minnet, f.eks når databasen har flere millioner rader og mange kolonner, kan en bruke flettesortering. Dette skjer ved at indeksen lagres på disk i form av et B+-tre. Treet er delt inn i blokker (pages) som kan leses inn fra disk. Når man søker i en B+-tre-indeks som ligger på disk, leser databasen først root-noden fra disken, deretter går den videre til neste nivå i treet ved å lese de nødvendige nodene, og fortsetter slik helt til blad-noden hvor pekere til de faktiske radene med data ligger. På denne måten trenger databasen kun å lese et lite antall noder fra disk i stedet for å skanne alle radene i tabellen.
 
 **Datastrukturer i DBMS:**
 
-[Skriv ditt svar her - diskuter B+-tre og hash-indekser]
+B+-tre indeks er et dynamisk flernivåindeks som automatisk holder seg balansert når data endres. Det er hierarkisk og sortert, og er effektivt for punkt- og range-spørringer.
+
+Hash-indeks bruker hash--funksjon for å finne riktig bucket. Hash-indeks er veldig raskt for punkt-søk, men ikke egnet for range-søk ettersom hashene ikke er sortert. Brukes typisk for unike IDer eller lookup-tabeller.
 
 ---
 
@@ -865,17 +936,18 @@ En stor ulempe med VIEW er som en kan se over at kunde_1 kan se når alle andre 
 
 **Foreslått datastruktur:**
 
-[Skriv ditt svar her - f.eks. heap-fil, LSM-tree, eller annen egnet datastruktur]
+Den beste datastrukturen for å logge alle hendelser i databasen, ville vært en LSM-tree (Log-Structured Merge-Tree) eller alternativt en heap-fil. 
 
 **Begrunnelse:**
 
 **Skrive-operasjoner:**
 
-[Skriv ditt svar her - forklar hvorfor datastrukturen er egnet for mange skrive-operasjoner]
+En LSM-tree er optimalisert for logging av mange append-only operasjoner, der hver hendelse legges til i rekkefølge. En LSM-tree skriver først til en liten, rask in-memory struktur, og slår senere sammen med diskstrukturen i batch. Dette gjør at mange små skriveoperasjoner kan håndteres effektivt uten å fragmentere diskdata eller gjøre hyppige disk-oppdateringer. Alternativt kan en heap-fil brukes, der nye poster bare legges til på slutten av filen, også effektivt for kontinuerlig logging.
 
 **Lese-operasjoner:**
 
-[Skriv ditt svar her - forklar hvordan datastrukturen håndterer sjeldne lese-operasjoner]
+For lese-operasjoner vil LSM-tree håndterer dette ved å slå sammen data fra minnet og disk i “merge”-operasjoner, slik at søk fortsatt er mulig, selv om det er noe ekstra kostnad for å traversere nivåene. Heap-fil er i dette tilfellet enklere, men søk krever ofte full scan med mindre man lager ekstra indekser.
+
 
 ---
 
@@ -883,23 +955,51 @@ En stor ulempe med VIEW er som en kan se over at kunde_1 kan se når alle andre 
 
 **Hvor bør validering gjøres:**
 
-[Skriv ditt svar her - argumenter for validering i ett eller flere lag]
+Optimalt burde valideringen bli gjort i flere lag samtidig. Om man har i nettleseren kan en få rask tilbakemelding og bedre brukeropplevelse. Applikasjonslaget kan gi sikkerhet, konsistente regler og mer kompleks logikk. Og databasen kan gi sikring av dataintegritet, uavhengig av klient eller applikasjon. Selv om alle tre er viktig for brukervennlighet, sikkerhet og dataintegritet, vil den viktigste valideringen være i databasen. Dette er siden databasen er siste forsvarslinje og sikrer dataintegritet uansett kilde.
+
 
 **Validering i nettleseren:**
 
-[Skriv ditt svar her - diskuter fordeler og ulemper]
+Fordeler:
+
+- Gir rask tilbakemelding til brukeren, for eksempel manglende felt eller feil format.
+- Reduserer antall unødvendige forespørsler til serveren, noe som sparer ressurser.
+
+Ulemper:
+
+- Kan bli manipulert gjennom HTTP-forespørsler.
+- Kan ikke alene sikre dataintegritet eller sikkerhet.
 
 **Validering i applikasjonslaget:**
 
-[Skriv ditt svar her - diskuter fordeler og ulemper]
+Fordeler:
+
+- Sentralisert kontroll over regler, som for eksempel passordkrav, mobilnummer format.
+- Kan håndtere mer komplekse logikker enn hva som er praktisk i nettleseren.
+- Beskytter mot feil og angrep fra klienten.
+
+Ulemper:
+
+- Krever ekstra kode og testing på serversiden.
+- Litt høyere belastning på serveren sammenlignet med kun klientvalidering.
 
 **Validering i databasen:**
 
-[Skriv ditt svar her - diskuter fordeler og ulemper]
+Fordeler:
+
+- Sikrer dataintegritet uansett hvilken applikasjon som skriver til databasen.
+- Kan bruke constraints som NOT NULL, UNIQUE, CHECK for å forhindre ugyldige data.
+
+Ulemper:
+
+- Gir ikke brukeren rask tilbakemelding, siden feil først oppdages etter innsetting.
+- Kan begrense fleksibiliteten hvis reglene endres ofte.
 
 **Konklusjon:**
 
 [Skriv ditt svar her - oppsummer hvor validering bør gjøres og hvorfor]
+
+Basert på diskusjonen over burde valideringen gjøres i alle tre lagene. Dette flerlags-oppsettet gir robusthet, sikkerhet og brukervennlighet samtidig.
 
 ---
 
