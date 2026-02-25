@@ -5,7 +5,7 @@
 
 -- Opprett grunnleggende tabeller
 CREATE TABLE SYKKELSTASJON (
-    stasjon_id INTEGER PRIMARY KEY,
+    stasjon_id INTEGER PRIMARY KEY CHECK (stasjon_id > 0),
     navn VARCHAR(50) NOT NULL,
     adresse VARCHAR(100) NOT NULL
 );
@@ -14,17 +14,17 @@ CREATE TABLE KUNDE (
     kunde_id INTEGER PRIMARY KEY,
     fornavn VARCHAR(50) NOT NULL,
     etternavn VARCHAR(50) NOT NULL,
-    mobilnummer VARCHAR(15) NOT NULL,
-    epost VARCHAR(255) NOT NULL
+    mobilnummer VARCHAR(15) NOT NULL CHECK (mobilnummer ~ '^\\+?[0-9]{8,15}$'),
+    epost VARCHAR(255) NOT NULL CHECK (epost LIKE '%@%')
 );
 
 CREATE TABLE SYKKEL (
     sykkel_id INTEGER PRIMARY KEY,
-    tatt_i_bruk_dato DATE NOT NULL
+    tatt_i_bruk_dato DATE NOT NULL CHECK (tatt_i_bruk_dato <= CURRENT_DATE)
 );
 
 CREATE TABLE las (
-    las_id INTEGER PRIMARY KEY,
+    las_id INTEGER PRIMARY KEY CHECK (las_id > 0),
     stasjon_id INTEGER NOT NULL,
     FOREIGN KEY (stasjon_id) REFERENCES sykkelstasjon(stasjon_id)
 );
@@ -34,7 +34,7 @@ CREATE TABLE utleie (
     utleie_id INTEGER PRIMARY KEY,
     start_tid TIMESTAMP NOT NULL,
     slutt_tid TIMESTAMP,
-    pris NUMERIC(6,2),
+    pris NUMERIC(6,2) CHECK (pris >= 0),
     kunde_id INTEGER NOT NULL,
     sykkel_id INTEGER NOT NULL,
     start_las_id INTEGER NOT NULL,
